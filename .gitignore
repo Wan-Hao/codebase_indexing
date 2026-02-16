@@ -1,0 +1,11 @@
+node_modules/
+dist/
+*.node
+target/
+.cache/
+.qdrant_data/
+*.onnx
+onnx/
+qdrant
+qdrant.tar.gz
+storage/

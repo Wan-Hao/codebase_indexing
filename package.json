@@ -1,0 +1,39 @@
+{
+  "name": "codebase-indexer",
+  "version": "0.1.0",
+  "description": "Local codebase indexing and semantic search engine inspired by Cursor",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build:rs": "napi build --platform --release ./native",
+    "build:ts": "tsc",
+    "build": "npm run build:rs && npm run build:ts",
+    "dev": "tsx src/cli.ts",
+    "index": "tsx src/cli.ts index",
+    "search": "tsx src/cli.ts search",
+    "start": "node dist/cli.js"
+  },
+  "napi": {
+    "name": "codebase-native",
+    "triples": {
+      "defaults": true
+    }
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "@huggingface/transformers": "^3.4.0",
+    "@qdrant/js-client-rest": "^1.13.0",
+    "chalk": "^5.4.1",
+    "commander": "^13.1.0",
+    "ignore": "^7.0.3",
+    "ora": "^8.2.0",
+    "tree-sitter": "^0.21.1",
+    "tree-sitter-typescript": "^0.21.2"
+  },
+  "devDependencies": {
+    "@napi-rs/cli": "^3.0.0",
+    "@types/node": "^22.13.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.3"
+  }
+}
