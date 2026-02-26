@@ -1,0 +1,24 @@
+{
+  "name": "@codebase-indexer/benchmark",
+  "version": "0.1.0",
+  "description": "Benchmark evaluation for codebase semantic search (CoIR / CodeSearchNet)",
+  "type": "module",
+  "scripts": {
+    "bench": "tsx src/cli.ts",
+    "download": "tsx src/cli.ts download",
+    "run:bench": "tsx src/cli.ts run",
+    "list": "tsx src/cli.ts list"
+  },
+  "dependencies": {
+    "@codebase-indexer/core": "*",
+    "chalk": "^5.4.1",
+    "commander": "^13.1.0",
+    "ora": "^8.2.0",
+    "parquetjs-lite": "^0.8.7"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.3"
+  }
+}

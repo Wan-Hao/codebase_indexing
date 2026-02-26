@@ -216,19 +216,16 @@ export class Indexer {
   private config: IndexerConfig;
   private chunker: ASTChunker;
   private embedder: Embedder;
-  private vectorStore: VectorStore;
+  private vectorStore!: VectorStore;
   private cache: EmbeddingCache;
   private merkleStatePath: string;
 
   constructor(config: IndexerConfig) {
     this.config = config;
     this.chunker = new ASTChunker(config.maxChunkTokens, config.minChunkTokens);
-    this.embedder = new Embedder(config.embeddingModel);
-    this.vectorStore = new VectorStore(
-      config.qdrantUrl,
-      config.collectionName,
-      this.embedder.getDimension()
-    );
+    this.embedder = new Embedder(config.embeddingModel, {
+      openaiApiKey: config.openaiApiKey,
+    });
     this.cache = new EmbeddingCache(
       path.resolve(config.rootDir, config.cachePath)
     );
@@ -241,10 +238,17 @@ export class Indexer {
 
   /**
    * Initialize all components (model loading, collection creation).
+   * VectorStore is created here (after embedder init) so the correct
+   * dimension is known regardless of OpenAI vs local fallback.
    */
   async init(): Promise<void> {
     await loadNative();
     await this.embedder.init();
+    this.vectorStore = new VectorStore(
+      this.config.qdrantUrl,
+      this.config.collectionName,
+      this.embedder.getDimension()
+    );
     await this.vectorStore.ensureCollection();
   }
 
@@ -354,7 +358,9 @@ export class Indexer {
         `Generating embeddings for ${uncachedChunks.length} chunks...`
       );
       const texts = uncachedChunks.map((c) => c.content);
-      newEmbeddings = await this.embedder.embedBatch(texts);
+      // OpenAI can handle larger batches; local models need smaller ones to avoid OOM
+      const batchSize = this.config.openaiApiKey ? 64 : 8;
+      newEmbeddings = await this.embedder.embedBatch(texts, batchSize);
 
       // Save to cache
       for (let i = 0; i < uncachedChunks.length; i++) {
@@ -424,9 +430,11 @@ export class Indexer {
 
   /**
    * Get index statistics.
+   * Can be called without init() — dimension doesn't matter for info queries.
    */
   async getStats() {
-    const qdrantInfo = await this.vectorStore.getInfo();
+    const vs = this.getOrCreateVectorStore();
+    const qdrantInfo = await vs.getInfo();
     const cacheStats = this.cache.stats();
     return {
       qdrant: qdrantInfo,
@@ -436,14 +444,31 @@ export class Indexer {
 
   /**
    * Clean up: delete collection and cache.
+   * Can be called without init() — dimension doesn't matter for deletion.
    */
   async reset(): Promise<void> {
-    await this.vectorStore.deleteCollection();
+    const vs = this.getOrCreateVectorStore();
+    await vs.deleteCollection();
     this.cache.clear();
     this.cache.save();
     if (fs.existsSync(this.merkleStatePath)) {
       fs.unlinkSync(this.merkleStatePath);
     }
+  }
+
+  /**
+   * Get existing VectorStore or create one with best-guess dimension.
+   * For operations that don't depend on exact dimension (stats, reset, delete).
+   */
+  private getOrCreateVectorStore(): VectorStore {
+    if (!this.vectorStore) {
+      this.vectorStore = new VectorStore(
+        this.config.qdrantUrl,
+        this.config.collectionName,
+        this.embedder.getDimension()
+      );
+    }
+    return this.vectorStore;
   }
 
   // ---- Private helpers ----

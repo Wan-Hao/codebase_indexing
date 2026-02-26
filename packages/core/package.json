@@ -1,9 +1,12 @@
 {
-  "name": "codebase-indexer",
+  "name": "@codebase-indexer/core",
   "version": "0.1.0",
-  "description": "Local codebase indexing and semantic search engine inspired by Cursor",
+  "description": "Local codebase indexing and semantic search engine",
   "type": "module",
-  "main": "dist/index.js",
+  "main": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
   "scripts": {
     "build:rs": "napi build --platform --release ./native",
     "build:ts": "tsc",
@@ -24,9 +27,7 @@
     "@huggingface/transformers": "^3.4.0",
     "@qdrant/js-client-rest": "^1.13.0",
     "chalk": "^5.4.1",
-    "cli-highlight": "^2.1.11",
     "commander": "^13.1.0",
-    "dotenv": "^17.3.1",
     "ignore": "^7.0.3",
     "ora": "^8.2.0",
     "tree-sitter": "^0.21.1",
