@@ -80,8 +80,10 @@ export interface IndexerConfig {
   qdrantUrl: string;
   /** Qdrant collection name */
   collectionName: string;
-  /** Embedding model name */
+  /** Embedding model name (local HuggingFace model) */
   embeddingModel: string;
+  /** OpenAI API key — if set, uses OpenAI embeddings with local fallback */
+  openaiApiKey?: string;
   /** Maximum tokens per chunk */
   maxChunkTokens: number;
   /** Minimum tokens per chunk (smaller chunks get merged with siblings) */
@@ -97,9 +99,9 @@ export const DEFAULT_CONFIG: Partial<IndexerConfig> = {
   extensions: ['.ts', '.tsx'],
   qdrantUrl: 'http://localhost:6333',
   collectionName: 'codebase',
-  embeddingModel: 'Xenova/bge-base-en-v1.5',
+  embeddingModel: 'Xenova/bge-m3',
   maxChunkTokens: 512,
-  minChunkTokens: 30,
+  minChunkTokens: 64,
   cachePath: '.cache/embeddings',
   topK: 10,
 };

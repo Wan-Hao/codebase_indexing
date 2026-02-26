@@ -8,4 +8,5 @@ target/
 onnx/
 qdrant
 qdrant.tar.gz
-storage/
+/storage/
+.env
